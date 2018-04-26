@@ -54,7 +54,7 @@ if __name__ == "__main__":
     adIds = np.array(pivotedAdVector.index)
 
     ## see function definition above
-    adIdsRev,convertToAdInx = getAdIdDictAndFunction(adIds)
+    adIdsRev,convertToAdInx = getAdIdConverterFunction(adIds)
 
 
     # In[24]:
