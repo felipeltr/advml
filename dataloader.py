@@ -14,6 +14,13 @@ import pickle
 # In[ ]:
 
 
+def splitTrainTest(eventsDf,frac=0.9):
+    thres = frac*eventsDf['timestamp'].max()
+    trainDf = eventsDf[eventsDf.timestamp < thres]
+    testDf = eventsDf[eventsDf.timestamp > thres]
+    return trainDf, testDf
+
+
 def getAdIdConverterFunction(adIds):
     # adIdsRev is a dict mapping from ad_id to ad_inx (i.e. the inx of such ad in adIds)
     adIdsRev = {adId: inx for inx, adId in enumerate(adIds)}
@@ -40,34 +47,12 @@ if __name__ == "__main__":
     adDf = pd.read_csv('promoted_content.csv')
     docCatDf = pd.read_csv('documents_categories.csv')
 
-    # Join both dataframes using document_id
-    adCatDf = adDf.merge(docCatDf,left_on='document_id',right_on='document_id',how='left')[['ad_id','category_id','confidence_level']]
-
-    # New column filled with ones
-    adCatDf['one_val'] = 1
-    # Pivot and transform into a large sparse matrix
-    # Each line is one Ad and each column is one category
-    pivotedAdVector = adCatDf.pivot(index='ad_id', columns='category_id', values='one_val').fillna(0)
-    sparseAdWeights = scipy.sparse.csr_matrix(pivotedAdVector)
-
-    # adIds is an array containing all ad_id
-    adIds = np.array(pivotedAdVector.index)
-
-    ## see function definition above
-    adIdsRev,convertToAdInx = getAdIdConverterFunction(adIds)
-
-
-    # In[24]:
-
-
-    # Save
-    with open('ads.pickle','wb') as f:
-        pickle.dump((sparseAdWeights,adIds),f)
-
+    
+    
 
     # In[4]:
 
-
+    ## HANDLE EVENTS FIRST
     # Load events and clicks
 
     clicksDf = pd.read_csv('clicks_train.csv')
@@ -90,17 +75,41 @@ if __name__ == "__main__":
     selectedEventsDf = eventsDf[shouldBeSelected(eventsDf.uuid)]
 
 
-
     # Join events and ads subsets
     eventWithAds = selectedEventsDf.merge(clicksDf,left_on='display_id',right_on='display_id',how='inner')
+    
+# %%    
+    
+    ## NOW, FILTER ADS THAT NEVER SHOW UP (since we filtered users)
+    adIdsSet = set(np.unique(eventWithAds.ad_id))
+    shouldBeSelectedAd = np.vectorize(lambda x: x in adIdsSet)
+    adDf = adDf[shouldBeSelectedAd(adDf.ad_id)]
+    # Join both dataframes using document_id
+    adCatDf = adDf.merge(docCatDf,left_on='document_id',right_on='document_id',how='left')[['ad_id','category_id','confidence_level']]
 
+    # New column filled with ones
+    adCatDf['one_val'] = 1
+    # Pivot and transform into a large sparse matrix
+    # Each line is one Ad and each column is one category
+    pivotedAdVector = adCatDf.pivot(index='ad_id', columns='category_id', values='one_val').fillna(0)
+    
+    sparseAdWeights = scipy.sparse.csr_matrix(pivotedAdVector)
+    # adIds is an array containing all ad_id
+    adIds = np.array(pivotedAdVector.index)
 
+    ## see function definition above
+    adIdsRev,convertToAdInx = getAdIdConverterFunction(adIds)
+    
+    
     # Add inx data
-
     eventWithAds['ad_inx'] = convertToAdInx(eventWithAds.ad_id)
     eventWithAds['user_inx'],uniqUser = pd.factorize(eventWithAds.uuid)
 
 
-    # Save
+    # Save ads data
+    with open('ads.pickle','wb') as f:
+        pickle.dump((sparseAdWeights,adIds),f)
+
+    # Save events data
     eventWithAds.to_csv('filtered_events.csv',index=False)
 
