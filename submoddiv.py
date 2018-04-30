@@ -146,6 +146,8 @@ class SubModDivUser():
         self.wAds = wAds.toarray()
         self.c = np.zeros((nUsers, wAds.shape[1])) # "c" in section 4.1 of paper
         
+        self.cDefault = self.c.copy()
+        
 #         with tf.device(' ')
         with tf.device('/gpu:0'):
             self.initTensorflowOp()
@@ -190,7 +192,8 @@ class SubModDivUser():
         return (self.c[userInx] + self.a) / np.linalg.norm(self.c[userInx] + self.a, ord=1)
     
     def resetW(self):
-        self.c[:,:] = 0   
+#        self.c[:,:] = 0
+        self.c = self.cDefault
     
     def subSetIteration(self,probs,prevAdInx):
         w = self.getW()
@@ -212,7 +215,7 @@ class SubModDivUser():
         return maxInx
         
         
-    def getSubSet(self, userInx, n=6):
+    def getSubSet(self, userInx, n=6, return_probs = False):
 #         t = time.time()
 #        probs = self.regrModel.predict([
 #            np.array([userInx]*self.wAds.shape[0]),
@@ -244,11 +247,20 @@ class SubModDivUser():
 
         
 #         print(self.wAds[currAdSet])
-            
+        if return_probs:
+            return currAdSet, probs[currAdSet]
         return currAdSet
     
     def registerClick(self, userInx, adInx):
         self.c[userInx] += self.wAds[adInx]
+        
+    def presetWeights(self,trainDf):
+        groupedDf = trainDf.groupby('user_inx')['ad_inx'].apply(np.array)
+        for userInx, adInxArr in groupedDf.iteritems():
+            self.c[userInx] += self.wAds[adInxArr].sum(axis=0).ravel()
+            
+        self.cDefault = self.c.copy()
+        
         
 #smd = SubModDivUser(uniqUser.shape[0], sparseAdWeights, model)
 #
