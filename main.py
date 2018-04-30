@@ -46,10 +46,27 @@ else:
 
 #%%
     
-smd = smd.SubModDivGlobal(sparseAdWeights,model)
+
+class Clicker1:
+    pass
+
+    
+smd = smd.SubModDivUser(nUser,sparseAdWeights,model)
 
 import time
 
 t = time.time()
 print(smd.getSubSet(1))
 print(time.time()-t)
+
+
+
+
+
+
+
+
+
+
+
+

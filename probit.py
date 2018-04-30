@@ -24,6 +24,19 @@ from keras.callbacks import *
 # %%
 
 
+def getProbs(model,userInx, adInx):
+    if len(model.inputs) == 1:
+        probs = model.predict([
+            adInx
+        ],batch_size=50000).ravel()
+    else:
+        probs = model.predict([
+            userInx,
+            adInx
+        ],batch_size=50000).ravel()
+    
+    return probs
+
 
 def probit_activation(x):
     return tf.distributions.Normal(loc=0., scale=1.).cdf(x)

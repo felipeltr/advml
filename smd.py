@@ -1,9 +1,10 @@
 
 import numpy as np
 import tensorflow as tf
+import probit
 
 class SubModDivGlobal():
-    def __init__(self,wAds,regrModel,alpha=1.0,beta=1.0):
+    def __init__(self,nUsers,wAds,regrModel,alpha=1.0,beta=1.0):
         self.regrModel = regrModel
         
         self.a = alpha
@@ -208,10 +209,15 @@ class SubModDivUser():
         
     def getSubSet(self, userInx, n=6):
 #         t = time.time()
-        probs = self.regrModel.predict([
-            np.array([userInx]*self.wAds.shape[0]),
-            np.arange(self.wAds.shape[0])
-        ],batch_size=50000).ravel()
+#        probs = self.regrModel.predict([
+#            np.array([userInx]*self.wAds.shape[0]),
+#            np.arange(self.wAds.shape[0])
+#        ],batch_size=50000).ravel()
+        probs = probit.getProbs(
+                self.regrModel,
+                np.array([userInx]*self.wAds.shape[0]),
+                np.arange(self.wAds.shape[0])
+            )
 #         print(time.time()-t)
         
         currAdSet = np.empty(0,dtype=np.int)
