@@ -8,12 +8,12 @@ import pandas as pd
 from importlib import reload
 
 import probit
-import smd
+import submoddiv
 import dataloader
 import os
 
 reload(probit)
-reload(smd)
+reload(submoddiv)
 reload(dataloader)
 
 os.chdir('/rmount')
@@ -47,17 +47,38 @@ else:
 #%%
     
 
-class Clicker1:
-    pass
+class ClickerBatch:
+    def __init__(self, smd, testDf, adWeights, its=10):
+#        self.testDf = testDf
+        self.normAdWeights = adWeights / adWeights.sum(axis=1)
+#        self.its = its
+        
+        userInx, userCounts = np.unique(testDf.user_inx,return_counts=True)
+        self.userBatch = np.random.choice(userInx,size=its,p=userCounts/userCounts.sum())
+        
+        global filteredTestDf
+        filteredTestDf = testDf[testDf.user_inx.isin(self.userBatch)]
+        
+        
+        
+    def run():
+        pass
+        
+        
+        
+        
+
+            
 
     
-smd = smd.SubModDivUser(nUser,sparseAdWeights,model)
+smd = submoddiv.SubModDivUser(nUser,sparseAdWeights,model)
+click1 = ClickerBatch(smd, testDf, sparseAdWeights)
 
-import time
-
-t = time.time()
-print(smd.getSubSet(1))
-print(time.time()-t)
+#import time
+#
+#t = time.time()
+#print(smd.getSubSet(1))
+#print(time.time()-t)
 
 
 
