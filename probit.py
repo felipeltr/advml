@@ -20,10 +20,6 @@ from keras.callbacks import *
 
 #import scipy
 
-
-# %%
-
-
 def getProbs(model,userInx, adInx):
     if len(model.inputs) == 1:
         probs = model.predict([
@@ -175,46 +171,3 @@ def trainModelCombined(model,trainedGlobalModel,trainDf,weights_filename):
             ModelCheckpoint(weights_filename, monitor='loss', save_best_only=True, save_weights_only=True),
         ]
     )
-
-
-
-
-
-
-
-#model = createProbitModel()
-#
-#model.summary()
-#
-#from keras.callbacks import *
-#
-#weights_filename = 'probit.h5'
-#
-#model.fit(
-#    [eventsDf.user_inx,eventsDf.ad_inx],
-#    eventsDf.clicked,
-#    epochs = 60,
-#    shuffle=True,
-#    batch_size=5000,
-#    callbacks=[
-#        EarlyStopping(monitor='loss', patience=2),
-#        ModelCheckpoint(weights_filename, monitor='loss', save_best_only=True, save_weights_only=True),
-#    ]
-#)
-
-#! gsutil cp probit.h5 gs://advml-bucket/
-
-#! gsutil cp gs://advml-bucket/probit.h5 .
-    
-#model.load_weights('probit.h5')
-
-
-        
-
-    
-
-# print(smd.getSubSet(4))
-# print(smd.getSubSet(40))
-# print(smd.getSubSet(420))
-
-#smd.getW()

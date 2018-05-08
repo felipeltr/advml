@@ -110,18 +110,11 @@ class SubModDivGlobal():
                         self.t_wAds: self.wAds,
                         self.t_w: self.getW()
                     })
-#                     print(time.time()-t)
-#                     print(newAd)
-#                     newAd = self.subSetIteration(probs,currAdSet)
-#                     print(list(newAd)[:50])
-#                     break 
                     currAdSet = np.append(currAdSet,newAd)
         
         # Update v
         self.v += self.wAds[currAdSet].sum(axis=0)
         
-#         print(self.wAds[currAdSet])
-            
         return currAdSet
     
     def registerClick(self,adInx):
@@ -216,17 +209,11 @@ class SubModDivUser():
         
         
     def getSubSet(self, userInx, n=6, return_probs = False):
-#         t = time.time()
-#        probs = self.regrModel.predict([
-#            np.array([userInx]*self.wAds.shape[0]),
-#            np.arange(self.wAds.shape[0])
-#        ],batch_size=50000).ravel()
         probs = probit.getProbs(
                 self.regrModel,
                 np.array([userInx]*self.wAds.shape[0]),
                 np.arange(self.wAds.shape[0])
             )
-#         print(time.time()-t)
         
         currAdSet = np.empty(0,dtype=np.int)
 
@@ -246,7 +233,6 @@ class SubModDivUser():
                     currAdSet = np.append(currAdSet,newAd)
 
         
-#         print(self.wAds[currAdSet])
         if return_probs:
             return currAdSet, probs[currAdSet]
         return currAdSet
@@ -261,9 +247,3 @@ class SubModDivUser():
             
         self.cDefault = self.c.copy()
         
-        
-#smd = SubModDivUser(uniqUser.shape[0], sparseAdWeights, model)
-#
-#t = time.time()
-#print(smd.getSubSet(1))
-#print(time.time()-t)
