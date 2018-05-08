@@ -209,23 +209,3 @@ print(clickers.runClicker1())
 print(clickers.runClicker2())
 print(clickers.runRandomClicker())
 print(time.time() - t)
-
-
-
-#import time
-#
-#t = time.time()
-#print(smd.getSubSet(1))
-#print(time.time()-t)
-
-
-
-
-
-
-
-
-
-
-
-
